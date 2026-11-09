@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>RentSmart - Parte Teorica</title>
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; line-height: 1.5; color: #222; margin: 40px 50px; }
+  h1 { font-size: 18pt; margin-bottom: 4px; }
+  h2 { font-size: 13pt; border-bottom: 1px solid #999; padding-bottom: 2px; margin-top: 24px; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+  th, td { border: 1px solid #888; padding: 4px 6px; text-align: left; vertical-align: top; }
+  th { background: #eee; }
+  code { font-family: Consolas, monospace; background: #f3f3f3; padding: 0 3px; }
+  pre { background: #f6f6f6; border: 1px solid #ccc; padding: 8px; font-size: 9.5pt; }
+  .svg-wrap { text-align: center; margin: 12px 0; }
+</style>
+</head>
+<body>
+
+<h1>RentSmart - Sistema de Orcamento de Locacao</h1>
+<p>Parte teorica do trabalho de Algorithmic Thinking &amp; Introduction to Object-Oriented Programming.<br>
+Autor: Gabriel &nbsp;|&nbsp; Repositorio: <code>RentSmart/</code> (main.py, test_rentsmart.py, README.md)</p>
+
+<h2>1. Analise do problema e regras de negocio</h2>
+<p>A R.M Imoveis calcula orcamentos de locacao manualmente. O RentSmart recebe as caracteristicas da locacao, aplica as regras comerciais, calcula o aluguel mensal e gera a projecao de pagamentos de 12 meses.</p>
+<table>
+  <tr><th>Item</th><th>Regra</th></tr>
+  <tr><td>Aluguel-base</td><td>Apartamento R$ 700,00; Casa R$ 900,00; Estudio R$ 1.200,00</td></tr>
+  <tr><td>Quarto extra</td><td>Apartamento 2 quartos +R$ 200,00; Casa 2 quartos +R$ 250,00</td></tr>
+  <tr><td>Garagem (casa/apto)</td><td>+R$ 300,00 por vaga</td></tr>
+  <tr><td>Estudio - vagas</td><td>Pacote de 2 vagas R$ 250,00; cada vaga extra R$ 60,00</td></tr>
+  <tr><td>Desconto</td><td>5% no apartamento sem criancas, sobre o aluguel ja com adicionais</td></tr>
+  <tr><td>Taxa contratual</td><td>R$ 2.000,00, separada do aluguel, parcelavel em ate 5 vezes</td></tr>
+</table>
+
+<h2>2. Entradas, processamentos e saidas</h2>
+<table>
+  <tr><th>Entradas (digitadas pelo usuario)</th><th>Processamento</th><th>Saidas</th></tr>
+  <tr>
+    <td>Tipo de imovel (1 apto, 2 casa, 3 estudio)<br>Quartos (1 ou 2; nao se aplica ao estudio)<br>Vaga de garagem (0 ou 1; no estudio, 0 ou 2+)<br>Criancas (s/n, so para apartamento)<br>Numero de parcelas da taxa (1 a 5)</td>
+    <td>Validacao de cada entrada (repete a pergunta se for invalida)<br>Calculo do aluguel-base, adicionais e garagem<br>Calculo do desconto de 5%<br>Calculo da parcela da taxa e do ajuste de centavos</td>
+    <td>Resumo do orcamento na tela (aluguel e taxa separados)<br>Arquivo <code>saida/projecao_12_meses.csv</code> com 12 linhas</td>
+  </tr>
+</table>
+
+<h2>3. Fluxograma</h2>
+<div class="svg-wrap">
+<svg viewBox="0 0 520 760" width="420" xmlns="http://www.w3.org/2000/svg" font-family="Arial" font-size="12">
+  <defs>
+    <marker id="seta" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#333"/>
+    </marker>
+  </defs>
+  <!-- inicio -->
+  <rect x="180" y="10" width="160" height="34" rx="16" fill="#fff" stroke="#333"/>
+  <text x="260" y="32" text-anchor="middle">Inicio</text>
+  <line x1="260" y1="44" x2="260" y2="66" stroke="#333" marker-end="url(#seta)"/>
+  <!-- tipo -->
+  <polygon points="260,66 360,106 260,146 160,106" fill="#fff" stroke="#333"/>
+  <text x="260" y="103" text-anchor="middle">Tipo?</text>
+  <text x="260" y="118" text-anchor="middle">1 apto / 2 casa / 3 estudio</text>
+  <line x1="260" y1="146" x2="260" y2="170" stroke="#333" marker-end="url(#seta)"/>
+  <text x="266" y="162">2 ou 1</text>
+  <!-- estudio desvia -->
+  <line x1="360" y1="106" x2="450" y2="106" stroke="#333"/>
+  <line x1="450" y1="106" x2="450" y2="230" stroke="#333" marker-end="url(#seta)"/>
+  <text x="372" y="100">3 (estudio)</text>
+  <!-- quartos / garagem -->
+  <rect x="180" y="170" width="160" height="40" fill="#fff" stroke="#333"/>
+  <text x="260" y="194" text-anchor="middle">Pedir quartos e garagem</text>
+  <line x1="260" y1="210" x2="260" y2="236" stroke="#333" marker-end="url(#seta)"/>
+  <!-- valida -->
+  <polygon points="260,236 340,266 260,296 180,266" fill="#fff" stroke="#333"/>
+  <text x="260" y="270" text-anchor="middle">Entrada valida?</text>
+  <line x1="180" y1="266" x2="110" y2="266" stroke="#333"/>
+  <line x1="110" y1="266" x2="110" y2="180" stroke="#333"/>
+  <line x1="110" y1="180" x2="180" y2="190" stroke="#333" marker-end="url(#seta)"/>
+  <text x="112" y="256">nao</text>
+  <line x1="260" y1="296" x2="260" y2="320" stroke="#333" marker-end="url(#seta)"/>
+  <text x="266" y="312">sim</text>
+  <!-- estudio junta -->
+  <line x1="450" y1="230" x2="450" y2="306" stroke="#333"/>
+  <line x1="450" y1="306" x2="260" y2="306" stroke="#333" stroke-dasharray="4 3"/>
+  <!-- crianças -->
+  <rect x="180" y="320" width="160" height="40" fill="#fff" stroke="#333"/>
+  <text x="260" y="336" text-anchor="middle">Criancas? (so apto)</text>
+  <text x="260" y="352" text-anchor="middle">Pedir parcelas (1 a 5)</text>
+  <line x1="260" y1="360" x2="260" y2="386" stroke="#333" marker-end="url(#seta)"/>
+  <!-- calculo -->
+  <rect x="150" y="386" width="220" height="56" fill="#fff" stroke="#333"/>
+  <text x="260" y="408" text-anchor="middle">Aluguel = base + quarto + garagem</text>
+  <text x="260" y="426" text-anchor="middle">Desconto 5% (apto sem criancas)</text>
+  <line x1="260" y1="442" x2="260" y2="466" stroke="#333" marker-end="url(#seta)"/>
+  <!-- saida -->
+  <rect x="150" y="466" width="220" height="56" fill="#fff" stroke="#333"/>
+  <text x="260" y="488" text-anchor="middle">Mostrar resumo (aluguel</text>
+  <text x="260" y="506" text-anchor="middle">e taxa separados)</text>
+  <line x1="260" y1="522" x2="260" y2="546" stroke="#333" marker-end="url(#seta)"/>
+  <!-- csv -->
+  <rect x="150" y="546" width="220" height="56" fill="#fff" stroke="#333"/>
+  <text x="260" y="568" text-anchor="middle">Gerar CSV: 12 meses</text>
+  <text x="260" y="586" text-anchor="middle">aluguel + parcela da taxa</text>
+  <line x1="260" y1="602" x2="260" y2="626" stroke="#333" marker-end="url(#seta)"/>
+  <rect x="180" y="626" width="160" height="34" rx="16" fill="#fff" stroke="#333"/>
+  <text x="260" y="648" text-anchor="middle">Fim</text>
+</svg>
+</div>
+
+<h2>4. Estrutura de classes</h2>
+<table>
+  <tr><th>Classe</th><th>Atributos</th><th>Metodos principais</th><th>Papel</th></tr>
+  <tr><td><code>Imovel</code></td><td>quartos, vagas</td><td>valor_base(), valor_quarto_extra(), valor_vagas(), tem_desconto_sem_criancas(), nome()</td><td>Classe base com valores padrao</td></tr>
+  <tr><td><code>Apartamento(Imovel)</code></td><td>herda</td><td>sobrescreve valores; desconto = True</td><td>Regras do apartamento</td></tr>
+  <tr><td><code>Casa(Imovel)</code></td><td>herda</td><td>sobrescreve valores</td><td>Regras da casa</td></tr>
+  <tr><td><code>Estudio(Imovel)</code></td><td>vagas (sem quartos)</td><td>valor_vagas() com pacote de 2 e extras</td><td>Regras do estudio</td></tr>
+  <tr><td><code>TaxaContratual</code></td><td>parcelas, VALOR (2000)</td><td>valor_parcela(), valor_no_mes(mes)</td><td>Taxa separada do aluguel</td></tr>
+  <tr><td><code>Locacao</code></td><td>imovel, tem_criancas, taxa</td><td>subtotal(), desconto(), aluguel_mensal(), mostrar_resumo()</td><td>Junta tudo e calcula o orcamento</td></tr>
+</table>
+<p>Funcoes fora de classe: <code>pedir_numero()</code> e <code>montar_locacao()</code> (entrada com validacao), <code>gerar_csv()</code> (projecao de 12 meses) e <code>main()</code>.</p>
+
+<h2>5. Como o pensamento algoritmico e a POO foram usados</h2>
+<ul>
+  <li><b>Decomposicao:</b> o problema foi dividido em entrada, calculo de aluguel, taxa, saida na tela e CSV, cada um numa parte do codigo.</li>
+  <li><b>Heranca e polimorfismo:</b> <code>Locacao</code> chama <code>valor_base()</code>, <code>valor_vagas()</code> etc. sem saber o tipo do imovel. Cada subclasse responde do seu jeito.</li>
+  <li><b>Encapsulamento:</b> a regra de cada imovel fica dentro da propria classe; a taxa tem seu calculo de parcela e de ajuste de centavos dentro de <code>TaxaContratual</code>.</li>
+  <li><b>Reuso:</b> casa e apartamento compartilham a logica de garagem (vagas x 300) herdada de <code>Imovel</code>.</li>
+  <li><b>Validacao:</b> a pergunta se repete ate receber uma opcao valida, evitando que dados errados entrem no calculo.</li>
+  <li><b>Testes:</b> 9 testes unitarios cobrem os casos do enunciado (ex.: apto 1q sem garagem = R$ 665,00; casa 2q com garagem = R$ 1.450,00; estudio com 3 vagas = R$ 1.510,00).</li>
+</ul>
+
+<h2>6. Premissas assumidas</h2>
+<ul>
+  <li>Casa e apartamento: no maximo 1 vaga de garagem (o enunciado fala em "uma vaga").</li>
+  <li>Estudio: 0 vagas ou 2 ou mais (1 vaga sozinha nao tem preco definido).</li>
+  <li>Desconto de 5% incide sobre base + quarto extra + garagem.</li>
+  <li>Taxa contratual sem juros; parcelas iguais com centavos ajustados na ultima.</li>
+  <li>Projecao com aluguel constante nos 12 meses; parcelas da taxa a partir do mes 1.</li>
+</ul>
+
+</body>
+</html>
